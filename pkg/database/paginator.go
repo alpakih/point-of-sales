@@ -164,7 +164,10 @@ func (p *Paginator) rawStatement(ctx context.Context) *gorm.DB {
 }
 
 func (p *Paginator) PageLink(page int) string {
-	link, _ := url.ParseRequestURI(p.Request.URL.String())
+	link, err := url.ParseRequestURI(p.Request.URL.String())
+	if err != nil {
+		panic(err)
+	}
 	values := link.Query()
 	if page < 1 {
 		values.Set("page", strconv.Itoa(page))

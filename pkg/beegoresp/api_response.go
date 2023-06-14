@@ -1,14 +1,11 @@
 package beegoresp
 
 import (
-	"encoding/json"
-	"errors"
 	"github.com/alpakih/point-of-sales/pkg/validator"
 	"github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/i18n"
 	ut "github.com/go-playground/universal-translator"
 	validatorGo "github.com/go-playground/validator/v10"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -130,30 +127,4 @@ func (r ApiResponse) ResponseError(ctx *context.Context, httpStatus int, code, m
 		RequestId: ctx.ResponseWriter.ResponseWriter.Header().Get("X-REQUEST-ID"),
 		TimeStamp: time.Now().Format(time.RFC3339),
 	})
-}
-
-// CheckJsonRequest Response API
-func CheckJsonRequest(language string, err error) string {
-	var syntaxError *json.SyntaxError
-	var unmarshalTypeError *json.UnmarshalTypeError
-	var invalidUnmarshalError *json.InvalidUnmarshalError
-
-	lang := "id"
-	acceptLang := language
-	if i18n.IsExist(acceptLang) {
-		lang = acceptLang
-	}
-
-	switch {
-	case errors.As(err, &syntaxError):
-		return i18n.Tr(lang, "message.errorJsonSyntax", syntaxError.Offset)
-	case errors.Is(err, io.ErrUnexpectedEOF):
-		return i18n.Tr(lang, "message.errorJsonUnexpectedEof")
-	case errors.As(err, &unmarshalTypeError):
-		return i18n.Tr(lang, "message.errorUnmarshalType", unmarshalTypeError.Field, unmarshalTypeError.Type)
-	case errors.As(err, &invalidUnmarshalError):
-		return i18n.Tr(lang, "message.errorUnmarshal")
-	default:
-		return i18n.Tr(lang, "message.errorUndefined")
-	}
 }

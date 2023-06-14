@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/alpakih/point-of-sales/internal/customer"
 	"github.com/alpakih/point-of-sales/internal/customer/mocks"
-	"github.com/alpakih/point-of-sales/internal/models"
 	beego "github.com/beego/beego/v2/server/web"
 	beegoContext "github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/i18n"
@@ -18,7 +17,7 @@ import (
 
 func TestCustomerHandler_StoreCustomer(t *testing.T) {
 
-	mockDataCustomer := models.CustomerStoreRequest{
+	mockDataCustomer := customer.StoreRequest{
 		Name:        "Test",
 		Email:       "email@test.com",
 		MobilePhone: "087666777656",
@@ -30,7 +29,7 @@ func TestCustomerHandler_StoreCustomer(t *testing.T) {
 	mockCustomerResponse := customer.NewCustomerMapper().ToCustomerResponse(mockCustomerEntity)
 
 	mockUCase := new(mocks.UseCase)
-	mockUCase.On("StoreCustomer", mock.Anything, mock.AnythingOfType("models.CustomerStoreRequest")).Return(&mockCustomerResponse, nil)
+	mockUCase.On("StoreCustomer", mock.Anything, mock.AnythingOfType("customer.StoreRequest")).Return(&mockCustomerResponse, nil)
 
 	if bodyJson, err := json.Marshal(mockDataCustomer); err != nil {
 		assert.NoError(t, err)

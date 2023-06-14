@@ -2,8 +2,8 @@ package customer
 
 import (
 	"github.com/alpakih/point-of-sales/internal/domain"
-	"github.com/alpakih/point-of-sales/internal/models"
 	"github.com/alpakih/point-of-sales/pkg/database"
+	"github.com/alpakih/point-of-sales/pkg/utils"
 	"strings"
 )
 
@@ -14,8 +14,8 @@ func NewCustomerMapper() *Mapper {
 	return &Mapper{}
 }
 
-func (m *Mapper) ToCustomerResponse(customer domain.Customer) models.CustomerResponse {
-	return models.CustomerResponse{
+func (m *Mapper) ToCustomerResponse(customer domain.Customer) Response {
+	return Response{
 		ID:          customer.ID,
 		Name:        customer.Name,
 		Email:       customer.Email,
@@ -23,7 +23,7 @@ func (m *Mapper) ToCustomerResponse(customer domain.Customer) models.CustomerRes
 	}
 }
 
-func (m *Mapper) CustomerStoreRequestToEntity(request models.CustomerStoreRequest) domain.Customer {
+func (m *Mapper) CustomerStoreRequestToEntity(request StoreRequest) domain.Customer {
 	return domain.Customer{
 		Name:        request.Name,
 		Email:       request.Email,
@@ -32,7 +32,7 @@ func (m *Mapper) CustomerStoreRequestToEntity(request models.CustomerStoreReques
 	}
 }
 
-func (m *Mapper) CustomerUpdateRequestToEntity(request models.CustomerUpdateRequest, id int) domain.Customer {
+func (m *Mapper) CustomerUpdateRequestToEntity(request UpdateRequest, id int) domain.Customer {
 	var entity domain.Customer
 	entity.ID = id
 	entity.Name = request.Name
@@ -45,17 +45,28 @@ func (m *Mapper) CustomerUpdateRequestToEntity(request models.CustomerUpdateRequ
 	return entity
 }
 
-func (m *Mapper) ToCustomerPaginationResponse(paginator *database.Paginator) (models.Pagination, []models.CustomerResponse) {
-	list := paginator.Records.(*[]domain.Customer)
-	var data = make([]models.CustomerResponse, len(*list))
-	for k, v := range *list {
-		data[k] = models.CustomerResponse{
-			ID:          v.ID,
-			Name:        v.Name,
-			Email:       v.Email,
-			MobilePhone: v.MobilePhone,
+func (m *Mapper) ToCustomerPaginationResponse(paginator *database.Paginator) PaginationResponse {
+	var paginationResponse PaginationResponse
+	if list, ok := paginator.Records.(*[]domain.Customer); ok {
+		var data = make([]Response, len(*list))
+		for k, v := range *list {
+			data[k] = Response{
+				ID:          v.ID,
+				Name:        v.Name,
+				Email:       v.Email,
+				MobilePhone: v.MobilePhone,
+			}
+		}
+		paginationResponse = PaginationResponse{
+			Pagination: utils.BuildPaginationInfo(
+				paginator.MaxPage,
+				paginator.Total,
+				paginator.PageSize,
+				paginator.CurrentPage,
+				utils.BuildPaginationLinks(paginator.Links.First, paginator.Links.Prev, paginator.Links.Next, paginator.Links.Last)),
+			Data: data,
 		}
 	}
-	return models.BuildPaginationInfo(paginator.MaxPage, paginator.Total, paginator.PageSize, paginator.CurrentPage,
-		models.BuildPaginationLinks(paginator.Links.First, paginator.Links.Prev, paginator.Links.Next, paginator.Links.Last)), data
+
+	return paginationResponse
 }

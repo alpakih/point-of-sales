@@ -2,7 +2,6 @@ package pg
 
 import (
 	"context"
-	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/alpakih/point-of-sales/internal/domain"
 	"github.com/alpakih/point-of-sales/pkg/utils"
@@ -118,7 +117,6 @@ func TestCustomerPgRepository_FindCustomers(t *testing.T) {
 		Path:   "/api/v1/customers",
 	}}), 1, 10, "", "")
 
-	fmt.Println("LINKS", data.Links)
 	assert.NoError(t, err)
 	assert.NotNil(t, data.Records)
 

@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
+	"github.com/alpakih/point-of-sales/internal/constant"
+	"github.com/alpakih/point-of-sales/internal/customer"
 	"github.com/alpakih/point-of-sales/internal/customer/mocks"
-	"github.com/alpakih/point-of-sales/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -11,7 +12,7 @@ import (
 
 func TestCustomerUseCase_StoreCustomer(t *testing.T) {
 	mockCustomerRepository := new(mocks.PgRepository)
-	mockDataCustomerRequest := models.CustomerStoreRequest{
+	mockDataCustomerRequest := customer.StoreRequest{
 		Name:        "name",
 		Email:       "email@test.com",
 		MobilePhone: "087666777876",
@@ -56,7 +57,7 @@ func TestCustomerUseCase_StoreCustomer(t *testing.T) {
 	t.Run("existing-email", func(t *testing.T) {
 		tempMockCustomer := mockDataCustomerRequest
 
-		mockCustomerRepository.On("CheckDuplicate", mock.Anything, "email =?", tempMockCustomer.Email).Return(int64(1), models.ErrEmailAlreadyExist).Once()
+		mockCustomerRepository.On("CheckDuplicate", mock.Anything, "email =?", tempMockCustomer.Email).Return(int64(1), constant.ErrEmailAlreadyExist).Once()
 
 		u := NewCustomerUseCase(mockCustomerRepository)
 

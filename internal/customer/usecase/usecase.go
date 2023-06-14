@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/alpakih/point-of-sales/internal/constant"
 	"github.com/alpakih/point-of-sales/internal/customer"
-	"github.com/alpakih/point-of-sales/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 )
@@ -18,7 +18,7 @@ func NewCustomerUseCase(pgRepository customer.PgRepository) customer.UseCase {
 	}
 }
 
-func (c customerUseCase) StoreCustomer(ctx context.Context, request models.CustomerStoreRequest) (*models.CustomerResponse, error) {
+func (c customerUseCase) StoreCustomer(ctx context.Context, request customer.StoreRequest) (*customer.Response, error) {
 	var entity = customer.NewCustomerMapper().CustomerStoreRequestToEntity(request)
 
 	// encrypt password
@@ -33,7 +33,7 @@ func (c customerUseCase) StoreCustomer(ctx context.Context, request models.Custo
 		return nil, err
 	} else {
 		if countEmail > 0 {
-			return nil, models.ErrEmailAlreadyExist
+			return nil, constant.ErrEmailAlreadyExist
 		}
 	}
 
@@ -45,7 +45,7 @@ func (c customerUseCase) StoreCustomer(ctx context.Context, request models.Custo
 	}
 
 	if countMobilePhone > 0 {
-		return nil, models.ErrMobilePhoneAlreadyExist
+		return nil, constant.ErrMobilePhoneAlreadyExist
 	}
 
 	if err := c.pgRepository.Create(ctx, &entity); err != nil {
@@ -57,7 +57,7 @@ func (c customerUseCase) StoreCustomer(ctx context.Context, request models.Custo
 	return &result, nil
 }
 
-func (c customerUseCase) UpdateCustomer(ctx context.Context, request models.CustomerUpdateRequest, id int) error {
+func (c customerUseCase) UpdateCustomer(ctx context.Context, request customer.UpdateRequest, id int) error {
 
 	data, err := c.pgRepository.FindOneCustomerByID(ctx, id)
 
@@ -80,7 +80,7 @@ func (c customerUseCase) UpdateCustomer(ctx context.Context, request models.Cust
 		return err
 	} else {
 		if countEmail > 0 {
-			return models.ErrEmailAlreadyExist
+			return constant.ErrEmailAlreadyExist
 		}
 	}
 
@@ -89,14 +89,14 @@ func (c customerUseCase) UpdateCustomer(ctx context.Context, request models.Cust
 		return err
 	} else {
 		if countMobilePhone > 0 {
-			return models.ErrMobilePhoneAlreadyExist
+			return constant.ErrMobilePhoneAlreadyExist
 		}
 	}
 
 	return c.pgRepository.Update(ctx, entity)
 }
 
-func (c customerUseCase) GetCustomerByID(ctx context.Context, id int) (*models.CustomerResponse, error) {
+func (c customerUseCase) GetCustomerByID(ctx context.Context, id int) (*customer.Response, error) {
 	data, err := c.pgRepository.FindOneCustomerByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -105,16 +105,16 @@ func (c customerUseCase) GetCustomerByID(ctx context.Context, id int) (*models.C
 	return &result, nil
 }
 
-func (c customerUseCase) GetCustomers(ctx context.Context, page, size int, search, order string) (*models.Pagination, []models.CustomerResponse, error) {
+func (c customerUseCase) GetCustomers(ctx context.Context, page, size int, search, order string) (*customer.PaginationResponse, error) {
 
 	paginator, err := c.pgRepository.FindCustomers(ctx, page, size, search, order)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	pagination, data := customer.NewCustomerMapper().ToCustomerPaginationResponse(paginator)
-	return &pagination, data, nil
+	pagination := customer.NewCustomerMapper().ToCustomerPaginationResponse(paginator)
+	return &pagination, nil
 }
 
 func (c customerUseCase) DeleteCustomer(ctx context.Context, id int) error {

@@ -1,10 +1,11 @@
-package models
+package utils
 
 type Pagination struct {
 	MaxPage     int64           `json:"max_page"`
 	Total       int64           `json:"total"`
 	PageSize    int             `json:"page_size"`
 	CurrentPage int             `json:"current_page"`
+	HasMorePage bool            `json:"has_more_page"`
 	Links       PaginationLinks `json:"links"`
 }
 
@@ -30,6 +31,7 @@ func BuildPaginationInfo(maxPage, total int64, pageSize, currentPage int, links 
 		Total:       total,
 		PageSize:    pageSize,
 		CurrentPage: currentPage,
+		HasMorePage: currentPage < int(total)/pageSize,
 		Links:       links,
 	}
 }
