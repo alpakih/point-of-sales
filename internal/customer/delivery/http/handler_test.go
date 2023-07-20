@@ -2,18 +2,29 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/alpakih/point-of-sales/internal/customer"
 	"github.com/alpakih/point-of-sales/internal/customer/mocks"
 	beego "github.com/beego/beego/v2/server/web"
-	beegoContext "github.com/beego/beego/v2/server/web/context"
 	"github.com/beego/i18n"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
+
+func init() {
+	_, file, _, _ := runtime.Caller(0)
+	fmt.Println(file)
+	appPath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator)+".."+string(filepath.Separator)+".."+string(filepath.Separator)+".."+string(filepath.Separator))))
+	fmt.Println(appPath)
+
+	beego.TestBeegoInit(appPath)
+}
 
 func TestCustomerHandler_StoreCustomer(t *testing.T) {
 
@@ -39,31 +50,16 @@ func TestCustomerHandler_StoreCustomer(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		handler := CustomerHandler{
-			Controller: beego.Controller{
-				Ctx: &beegoContext.Context{
-					Request: r,
-					ResponseWriter: &beegoContext.Response{
-						ResponseWriter: w,
-					},
-				},
-				Data: map[interface{}]interface{}{},
-			},
-			Locale: i18n.Locale{
-				Lang: "id",
-			},
+		h := beego.NewControllerRegister()
+
+		handler := &CustomerHandler{
+			Locale:          i18n.Locale{Lang: "id"},
 			CustomerUseCase: mockUCase,
 		}
 
-		handler.Ctx.Input = &beegoContext.BeegoInput{
-			Context:     handler.Ctx,
-			RequestBody: bodyJson,
-		}
-		handler.Ctx.Output = &beegoContext.BeegoOutput{
-			Context: handler.Ctx,
-		}
+		h.Add("/api/v1/customer", handler, beego.WithRouterMethods(handler, "post:StoreCustomer"))
 
-		handler.StoreCustomer()
+		h.ServeHTTP(w, r)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		mockUCase.AssertExpectations(t)

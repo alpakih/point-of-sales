@@ -41,7 +41,7 @@ func (h *CustomerHandler) Prepare() {
 func (h *CustomerHandler) StoreCustomer() {
 	var request customer.StoreRequest
 
-	if err := h.BindJSON(&request); err != nil {
+	if err := h.Bind(&request); err != nil {
 		var (
 			syntaxError           *json.SyntaxError
 			unmarshalTypeError    *json.UnmarshalTypeError
